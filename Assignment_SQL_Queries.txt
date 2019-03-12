@@ -1,0 +1,45 @@
+-----------Question 1-----------------
+
+select first_name, salary, datediff(DD, min(HireDate), max(HireDate)) as Differance_in_Days from Employees
+where TerminationDate is NULL
+
+-----------Question 2-----------------
+ 
+SELECT x.date, MIN(y.date) y_date, DATEDIFF(MIN(y.date),x.date) days
+FROM
+(
+SELECT hiredate date FROM employees
+UNION 
+SELECT terminationdate FROM employees
+) x
+JOIN
+(
+SELECT hiredate date FROM employees
+UNION 
+SELECT terminationdate FROM employees
+UNION
+SELECT CURDATE())
+y
+ON y.date > x.date
+GROUP BY x.date	
+ORDER BY days DESC LIMIT 1;
+
+
+---------Question 3-----------
+
+SELECT t.TS     AS As_Of
+      , COUNT(1) AS Employee_Count
+   FROM Employees e
+   JOIN ( SELECT a.TerminationDate AS ts
+            FROM Employees a
+           WHERE a.TerminationDate IS NOT NULL
+           GROUP BY a.TerminationDate
+           UNION
+          SELECT h.HireDate AS TS
+            FROM Employees h
+           WHERE h.HireDate IS NOT NULL
+           GROUP BY h.HireDate
+        ) t
+     ON ( t.ts >= e.HireDate )
+    AND ( t.ts <  e.TerminationDate OR e.TerminationDate IS NULL)
+  GROUP BY t.TS
